@@ -2,8 +2,9 @@ import { Toaster } from "sonner"
 import { BrowserRouter, Routes, Route } from "react-router"
 import Homepage from "./pages/Homepage"
 import NotFound from "./pages/NotFound"
-import SignIn from "./pages/signIn"
+
 import SignUp from "./pages/SignUp"
+import SignIn from "./pages/SignIn"
 function App() {
 
   return (
@@ -22,7 +23,7 @@ function App() {
           <Route path="/SignIn"
             element={<SignIn/>}
           />
-          <Route path="/SignIn"
+          <Route path="/SignUp"
             element={<SignUp/>}
           />
         </Routes>
