@@ -8,17 +8,53 @@ import { Label } from "../ui/label";
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {z} from 'zod';
+import { useNavigate } from 'react-router-dom' // ✅ Thêm
+import { toast } from 'sonner' // ✅ Thêm
+import api from '@/lib/axios' // ✅ Thêm
+
+
 export function SigninForm({
   className,
   ...props
 }) {
+    const navigate = useNavigate() // ✅ Thêm
+
   const signUpSchema = z.object({
   email: z.string().email("email không hợp lệ"),
   password: z.string().min(6,"mật khẩu phải có 6 kí tự")
 
 })
    const onSubmit = async (data)=>{
-  console.log("dữ liệu hợp lệ",data)
+  try {
+    console.log("đang đăng kí với data",data)
+    const response = await api.post('/Auth/login',{
+       email: data.email,
+      password: data.password
+
+    })
+      console.log("Đăng ký thành công:", response.data)
+      localStorage.setItem('accessToken', response.data.accessToken)
+      localStorage.setItem('refreshToken', response.data.refreshToken)
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+      toast.success(`Chào mừng ${response.data.user.username} trở lại!`)
+
+      // Redirect về Homepage
+      navigate('/')
+  } catch (error) {
+      console.error('Lỗi đăng nhập:', error)
+
+      // Hiển thị lỗi chi tiết
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message)
+      } else if (error.response?.status === 401) {
+        toast.error('Email hoặc mật khẩu không chính xác!')
+      } else {
+        toast.error('Đăng nhập thất bại. Vui lòng thử lại!')
+      }
+  }
+
+
+
  }
   const {register,handleSubmit,formState:{errors,isSubmitting}}  = useForm(
   {
@@ -57,6 +93,12 @@ export function SigninForm({
             <Button disabled ={isSubmitting} type="submit" className="w-full">
               Đăng nhập
             </Button>
+            <a 
+    href="/forgot-password" 
+    className="text-sm text-primary hover:underline"
+  >
+    Quên mật khẩu?
+  </a>
             <div className="text-center text-sm">
               Chưa có tài khoản? {" "}
               <a className="underline underline-offset-4" href="/SignUp">Đăng ký</a>
@@ -64,6 +106,7 @@ export function SigninForm({
             </div>
            
           </form>
+          
           <div className="bg-muted relative hidden md:block">
             <img
              src="/public/login.jpg"

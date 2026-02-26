@@ -1,4 +1,5 @@
 import AddTask from '@/components/AddTask'
+import LogoutButton from '@/components/auth/LogoutButton'
 import DateTimeFillter from '@/components/DateTimeFillter'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header'
@@ -98,7 +99,11 @@ const Homepage = () => {
       />
 
       <div className='container pt-8 mx-auto relative z-10'>
+         <div className="flex justify-end">
+            <LogoutButton />
+          </div>
         <div className='w-full max-w-2xl p-6 mx-auto space-y-6'>
+       
           <Header />
           <AddTask handleNewTaskAdded={fetchTask} />
 
