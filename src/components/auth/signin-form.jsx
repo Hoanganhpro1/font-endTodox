@@ -62,6 +62,37 @@ export function SigninForm({
   }
   
  )
+ const handleLogin = async (data) => {
+  try {
+    const response = await api.post('/Auth/login', {
+      email: data.email,
+      password: data.password
+    })
+
+    // Lưu tokens
+    localStorage.setItem('accessToken', response.data.accessToken)
+    localStorage.setItem('refreshToken', response.data.refreshToken)
+    localStorage.setItem('user', JSON.stringify(response.data.user))
+
+    toast.success(`Chào mừng ${response.data.user.username}!`)
+    
+    // ✅ Redirect theo role
+    if (response.data.user.role === 'Admin') {
+      navigate('/admin')  // Admin → Admin Dashboard
+    } else {
+      navigate('/')       // User → Homepage
+    }
+    
+  } catch (error) {
+    console.error('Login error:', error)
+    
+    if (error.response?.data?.message) {
+      toast.error(error.response.data.message)
+    } else {
+      toast.error('Đăng nhập thất bại. Vui lòng kiểm tra email và mật khẩu!')
+    }
+  }
+}
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0">

@@ -6,17 +6,25 @@ import Header from '@/components/Header'
 import StatsAndFillter from '@/components/StatsAndFillter'
 import TaskList from '@/components/TaskList'
 import TaskListPagination from '@/components/TaskListPagination'
+import { Button } from '@/components/ui/button'  // ✅ Thêm import
+import { Shield } from 'lucide-react'              // ✅ Thêm import
+import { useNavigate } from 'react-router-dom'     // ✅ Thêm import
 import api from '@/lib/axios'
 import { visibleTaskLimit } from '@/lib/data'
 import React, { useEffect, useState } from 'react'
 
 const Homepage = () => {
+  const navigate = useNavigate()  // ✅ Thêm hook
   const [taskBuffer, setTaskBuffer] = useState([])
   const [filter, setFilter] = useState('all')
   const [timeFilter, setTimeFilter] = useState('all')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [page, setPage] = useState(1)
+
+  // ✅ Lấy thông tin user
+  const userString = localStorage.getItem('user')
+  const user = userString ? JSON.parse(userString) : null
 
   useEffect(() => {
     fetchTask();
@@ -43,7 +51,6 @@ const Homepage = () => {
     }
   }
 
-  // Lọc tasks theo status filter
   const filteredTasks = taskBuffer.filter(task => {
     const status = task.status?.toLowerCase()
     if (filter === 'active') return status === 'active'
@@ -51,11 +58,9 @@ const Homepage = () => {
     return true
   })
 
-  // Tính số lượng
   const completedCount = taskBuffer.filter(t => t.status?.toLowerCase() === 'completed').length
   const activeCount = taskBuffer.filter(t => t.status?.toLowerCase() === 'active').length
 
-  // Tính pagination
   const totalPages = Math.ceil(filteredTasks.length / visibleTaskLimit)
   
   const visibleTasks = filteredTasks.slice(
@@ -63,7 +68,6 @@ const Homepage = () => {
     page * visibleTaskLimit
   )
 
-  // ✅ Fix: Dùng useEffect thay vì gọi trực tiếp
   useEffect(() => {
     if (visibleTasks.length === 0 && page > 1) {
       setPage(page - 1)
@@ -99,11 +103,24 @@ const Homepage = () => {
       />
 
       <div className='container pt-8 mx-auto relative z-10'>
-         <div className="flex justify-end">
-            <LogoutButton />
-          </div>
+        {/* ✅ Phần buttons - Thêm Admin Panel button */}
+        <div className="flex justify-end gap-3 mb-4">
+          {/* Chỉ hiện nút Admin Panel nếu user là Admin */}
+          {user && user.role === 'Admin' && (
+            <Button
+              variant="outline"
+              onClick={() => navigate('/admin')}
+              className="flex items-center gap-2 border-primary text-primary hover:bg-primary hover:text-white"
+            >
+              <Shield className="h-4 w-4" />
+              Admin Panel
+            </Button>
+          )}
+          
+          <LogoutButton />
+        </div>
+
         <div className='w-full max-w-2xl p-6 mx-auto space-y-6'>
-       
           <Header />
           <AddTask handleNewTaskAdded={fetchTask} />
 
@@ -118,13 +135,12 @@ const Homepage = () => {
           {error && <p className="text-center text-red-500">Lỗi: {error}</p>}
 
           <TaskList
-            filterTask={visibleTasks}  // ✅ Chỉ truyền visibleTasks
+            filterTask={visibleTasks}
             filter={filter}
             handleTaskChanged={fetchTask}
           />
 
           <div className='flex flex-col items-center justify-between gap-6 sm:flex-row'>
-            {/* ✅ Chỉ hiển thị khi có nhiều hơn 1 trang */}
             {totalPages > 1 && (
               <TaskListPagination
                 handleNext={handleNext}
